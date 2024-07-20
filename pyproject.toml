@@ -1,0 +1,64 @@
+[tool.poetry]
+name = "citibank"
+version = "0.1.0"
+description = "Python library that downloads e-statements from Citibank"
+repository = "https://github.com/benjamin-awd/citibank-statement-downloader"
+authors = ["Benjamin Dornel <benjamindornel@gmail.com>"]
+readme = "README.md"
+license = "MIT"
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Programming Language :: Python :: 3.11",
+]
+
+[tool.poetry.dependencies]
+python = ">=3.11,<3.12"
+google-auth-oauthlib = "^1.2.0"
+google-auth = "^2.26.0"
+google-api-python-client = "^2.111.0"
+pydantic-settings = "^2.1.0"
+google-cloud-secret-manager = "^2.17.0"
+selenium = "^4.16.0"
+google-cloud-storage = "^2.14.0"
+selenium-stealth = "^1.0.6"
+
+[tool.poetry.group.dev.dependencies]
+black = "^23.7.0"
+isort = "^5.12.0"
+taskipy = "^1.12.0"
+flake8 = "^6.1.0"
+pytest = "^7.4.4"
+pytest-xdist = "^3.3.1"
+pysnooper = "^1.2.0"
+google-api-python-client-stubs = "^1.23.0"
+mypy = "^1.6.1"
+types-requests = "^2.31.0.20231231"
+types-python-dateutil = "^2.8.19.14"
+pytest-mock = "^3.12.0"
+requests-mock = "^1.11.0"
+ipykernel = "^6.29.5"
+
+[tool.taskipy.tasks]
+format = "isort . && black ."
+lint = "flake8 citibank"
+full_test = "pytest -n auto"
+mypy = "mypy citibank"
+ci = "poetry run task format && poetry run task lint && poetry run task test"
+test = "pytest ."
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
+
+[tool.mypy]
+disable_error_code = [
+    "annotation-unchecked",
+]
+
+[[tool.mypy.overrides]]
+module = [
+    "citibank.*",
+    "google.*",
+    "google_auth_oauthlib.flow",
+]
+ignore_missing_imports = true

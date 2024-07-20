@@ -1,0 +1,9 @@
+services:
+  citibank:
+    build: .
+    container_name: citibank
+    image: citibank
+    volumes:
+      - $HOME/.config/gcloud:/root/.config/gcloud
+    env_file:
+      .env
