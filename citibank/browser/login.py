@@ -1,6 +1,7 @@
 import asyncio
 import logging
 import time
+from datetime import datetime
 
 from citibank.gmail import Gmail
 from citibank.settings import settings
@@ -38,9 +39,12 @@ class CitiAuthHandler:
         ]
     )
 
-    def __init__(self, gmail_client: Gmail, download_directory: str):
+    def __init__(
+        self, gmail_client: Gmail, download_directory: str, headless: bool = True
+    ):
         self.download_directory = download_directory
         self.gmail_client = gmail_client
+        self.headless = headless
         self.webdriver = self.create_driver()
 
     def create_driver(self) -> webdriver.Chrome:
@@ -49,7 +53,8 @@ class CitiAuthHandler:
         options.add_experimental_option("detach", True)
         options.add_argument(f"--user-agent={self.user_agent}")
         options.add_argument("--window-size=1920,1080")
-        options.add_argument("--headless=new")
+        if self.headless:
+            options.add_argument("--headless=new")
         options.add_experimental_option("excludeSwitches", ["enable-automation"])
         options.add_experimental_option("useAutomationExtension", False)
         options.add_argument("--disable-gpu")
@@ -122,6 +127,22 @@ class CitiAuthHandler:
             EC.visibility_of_element_located((By.ID, "SMSTokenPin0"))
         )
         sms_container.send_keys(otp)
+
+        # wait for date selector UI to appear
+        dropdown = WebDriverWait(driver, 10).until(
+            EC.element_to_be_clickable((By.ID, "selectedYearIndex-button"))
+        )
+        dropdown.click()
+        year = str(datetime.now().year)
+        desired_option = WebDriverWait(driver, 10).until(
+            EC.presence_of_element_located(
+                (
+                    By.XPATH,
+                    f"//span[@class='ui-selectmenu-item-header' and text()='{year}']",
+                )
+            )
+        )
+        desired_option.click()
 
         # download button
         download_button = WebDriverWait(driver, 10).until(
