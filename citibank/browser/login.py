@@ -7,6 +7,7 @@ from citibank.gmail import Gmail
 from citibank.settings import settings
 from google.cloud import storage  # type: ignore
 from selenium import webdriver
+from selenium.common.exceptions import StaleElementReferenceException
 from selenium.webdriver.chrome.options import Options
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support import expected_conditions as EC
@@ -129,6 +130,7 @@ class CitiAuthHandler:
         sms_container.send_keys(otp)
 
         # wait for date selector UI to appear
+        time.sleep(10)
         dropdown = WebDriverWait(driver, 10).until(
             EC.element_to_be_clickable((By.ID, "selectedYearIndex-button"))
         )
@@ -142,15 +144,29 @@ class CitiAuthHandler:
                 )
             )
         )
+        time.sleep(1)
         desired_option.click()
 
         # download button
-        download_button = WebDriverWait(driver, 10).until(
-            EC.visibility_of_element_located(
-                (By.XPATH, "//button[@onclick='javascript:goClicked();']")
+
+        try:
+            download_button = WebDriverWait(driver, 10).until(
+                EC.visibility_of_element_located(
+                    (By.XPATH, "//button[@onclick='javascript:goClicked();']")
+                )
             )
-        )
-        download_button.click()
+            time.sleep(1)
+            download_button.click()
+
+        except StaleElementReferenceException as err:
+            logger.info(f"Stale element found, retrying - {err}")
+            download_button = WebDriverWait(driver, 10).until(
+                EC.visibility_of_element_located(
+                    (By.XPATH, "//button[@onclick='javascript:goClicked();']")
+                )
+            )
+            time.sleep(1)
+            download_button.click()
 
         # proceed button
         proceed_button = WebDriverWait(driver, 10).until(
@@ -158,6 +174,7 @@ class CitiAuthHandler:
                 (By.XPATH, "//button[@onclick='javascript:okPdfWarning();']")
             )
         )
+        time.sleep(1)
         proceed_button.click()
 
         return driver

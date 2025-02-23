@@ -34,6 +34,7 @@ def main():
     # rename file
     file = glob(f"{download_directory}/*.pdf")[0]
     filepath = Path(file)
+    logger.info(f"Filepath: {filepath.resolve()}")
     dates = filepath.stem.split("_")[3]
     day = dates[0:2]
     month = dates[2:4]
